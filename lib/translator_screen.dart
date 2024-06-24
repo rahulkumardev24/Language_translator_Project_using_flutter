@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:translator/translator.dart';
 
 class LanguageTranslatorScreen extends StatefulWidget {
@@ -31,11 +31,59 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
   var outputLanguage = "";
   TextEditingController languageController = TextEditingController();
 
-
+  // ...............SPEAK...............//
+  final FlutterTts _flutterTts = FlutterTts();
   bool isSpeaking = false;
   bool isButtonPressed = false;
+  String _selectedLanguage = 'en-US';
 
+  @override
+  void initState() {
+    super.initState();
+    _initTts();
+  }
 
+  void _initTts() {
+    _flutterTts.setStartHandler(() {
+     setState(() {
+       isSpeaking = true ;
+     });
+    });
+
+    _flutterTts.setCompletionHandler(() {
+      setState(() {
+        isSpeaking = false ;
+      });
+    });
+
+    _flutterTts.setErrorHandler((msg) {
+      setState(() {
+        print("TTS Error: $msg");
+        isSpeaking = false ;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $msg")),
+      );
+    });
+
+    // Optionally set default voice parameters
+    _flutterTts.setLanguage(_selectedLanguage);
+    _flutterTts.setPitch(1.0);
+    _flutterTts.setSpeechRate(0.5);
+  }
+
+  Future<void> _speak(String text) async {
+    if (text.isNotEmpty) {
+      try {
+        await _flutterTts.speak(text);
+      } catch (e) {
+        print("TTS Error: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to speak: $e")),
+        );
+      }
+    }
+  }
 
   void translate(String source, String destination, String input) async {
     GoogleTranslator translator = GoogleTranslator();
@@ -91,7 +139,6 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,6 +184,10 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
+  //........................................WIDGETS..........................//
+
+  //.......................FROM LANGUAGE LIST BOX ....................................//
+
   Widget fromLanguageList() {
     return Container(
       height: 60,
@@ -146,7 +197,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
         color: Colors.blue.shade100,
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
-          BoxShadow(color: Colors.black45, blurRadius: 2, offset: Offset(1.0, 2.0))
+          BoxShadow(
+              color: Colors.black45, blurRadius: 2, offset: Offset(1.0, 2.0))
         ],
       ),
       child: Padding(
@@ -160,8 +212,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
             style: const TextStyle(
                 color: Colors.black87,
                 fontSize: 23,
-                fontWeight: FontWeight.bold
-            ),
+                fontWeight: FontWeight.bold),
           ),
           dropdownColor: Colors.blue.shade50,
           items: languageList.map((String dropDownStringItem) {
@@ -180,6 +231,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
+  //..................... To LANGUAGE LIST BOX ...........................//
   Widget toLanguageList() {
     return Container(
       height: 60,
@@ -189,7 +241,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
         color: Colors.blue.shade100,
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
-          BoxShadow(color: Colors.black45, blurRadius: 2, offset: Offset(1.0, 2.0))
+          BoxShadow(
+              color: Colors.black45, blurRadius: 2, offset: Offset(1.0, 2.0))
         ],
       ),
       child: Padding(
@@ -224,6 +277,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
+  //......................... USER INPUT BOX ...........................//
+
   Widget userInputTextBox() {
     return Padding(
       padding: const EdgeInsets.all(13.0),
@@ -235,21 +290,18 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
         style: const TextStyle(
             color: Colors.deepOrangeAccent,
             fontSize: 20,
-            fontWeight: FontWeight.bold
-        ),
+            fontWeight: FontWeight.bold),
         decoration: InputDecoration(
           focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(width: 2, color: Colors.orangeAccent),
-              borderRadius: BorderRadius.circular(10)
-          ),
+              borderSide:
+              const BorderSide(width: 2, color: Colors.orangeAccent),
+              borderRadius: BorderRadius.circular(10)),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(width: 1, color: Colors.tealAccent)
-          ),
+              borderSide: const BorderSide(width: 1, color: Colors.tealAccent)),
           disabledBorder: OutlineInputBorder(
               borderSide: const BorderSide(width: 1, color: Colors.deepOrange),
-              borderRadius: BorderRadius.circular(10)
-          ),
+              borderRadius: BorderRadius.circular(10)),
           hintText: "Write Text",
           labelStyle: TextStyle(fontSize: 20, color: Colors.deepOrange),
         ),
@@ -264,6 +316,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
+  //....................TRANSLATED BUTTON ................................//
+
   Widget translatedButton() {
     return Container(
       width: 300,
@@ -272,8 +326,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
           translate(
               languageCode(originLanguage),
               languageCode(destinationLanguage),
-              languageController.text.toString()
-          );
+              languageController.text.toString());
         },
         backgroundColor: Colors.tealAccent.shade100,
         splashColor: Colors.orange.shade400,
@@ -287,6 +340,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
+  //...................OUTPUT TEXT BOX .....................................//
+
   Widget outputTextBox() {
     return Padding(
       padding: const EdgeInsets.all(12.0),
@@ -294,8 +349,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
         width: double.maxFinite,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(width: 1, color: Colors.deepOrange)
-        ),
+            border: Border.all(width: 1, color: Colors.deepOrange)),
         child: Column(
           children: [
             Row(
@@ -309,7 +363,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   "\n$outputLanguage",
-                  style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 25, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -319,13 +374,15 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
+  // ................. Speaker icon ...............................//
+
   Widget speakIconButton() {
     return IconButton(
       onPressed: () {
         setState(() {
           isButtonPressed = true;
         });
-
+        _speak(outputLanguage);
         Future.delayed(Duration(seconds: 1), () {
           setState(() {
             isButtonPressed = false;
