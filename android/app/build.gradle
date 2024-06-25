@@ -44,6 +44,16 @@ android {
         versionName = flutterVersionName
     }
 
+    defaultConfig {
+        applicationId "com.example.app"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

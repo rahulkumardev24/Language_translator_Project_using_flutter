@@ -37,31 +37,32 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
   final FlutterTts _flutterTts = FlutterTts();
   bool isSpeaking = false;
   bool isButtonPressed = false;
-  String _selectedLanguage = 'en-US';
+  final String _selectedLanguage = 'en-US';
 
   @override
   void initState() {
     super.initState();
-    _initTts();
+    initializedTts();  // here we call initializedTts
+    initializedSpeechToText() ;
   }
 
-  void _initTts() {
+  void initializedTts() {
     _flutterTts.setStartHandler(() {
-     setState(() {
-       isSpeaking = true ;
-     });
+      setState(() {
+        isSpeaking = true;
+      });
     });
 
     _flutterTts.setCompletionHandler(() {
       setState(() {
-        isSpeaking = false ;
+        isSpeaking = false;
       });
     });
 
     _flutterTts.setErrorHandler((msg) {
       setState(() {
         print("TTS Error: $msg");
-        isSpeaking = false ;
+        isSpeaking = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $msg")),
@@ -92,7 +93,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
   void translate(String source, String destination, String input) async {
     GoogleTranslator translator = GoogleTranslator();
     var translation =
-    await translator.translate(input, from: source, to: destination);
+        await translator.translate(input, from: source, to: destination);
     setState(() {
       outputLanguage = translation.text.toString();
     });
@@ -143,10 +144,20 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     }
   }
 
-  // voice Recogination ........ speech to text //
+  // ................................VOICE RECOGNITION ........ SPEECH TO TEXT ......................... //
 
-  bool startRecording = false ;
+  bool startRecording = false;
   final SpeechToText speechToText = SpeechToText();
+  bool isAvailable = false;
+
+ //  this function is call above inside the  initState
+ Future<void> initializedSpeechToText() async {
+ isAvailable = await speechToText.initialize();
+ setState(() {
+
+ });
+ }
+
 
 
   @override
@@ -163,7 +174,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-         micButton()
+          // Here we call Floating Mic Button
+          micButton()
         ],
       ),
 
@@ -314,7 +326,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
         decoration: InputDecoration(
           focusedBorder: OutlineInputBorder(
               borderSide:
-              const BorderSide(width: 2, color: Colors.orangeAccent),
+                  const BorderSide(width: 2, color: Colors.orangeAccent),
               borderRadius: BorderRadius.circular(10)),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -382,7 +394,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  "\n$outputLanguage",
+                  "$outputLanguage",
                   style: const TextStyle(
                       fontSize: 25, fontWeight: FontWeight.bold),
                 ),
@@ -414,10 +426,10 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
-  // Mic Button
-Widget micButton(){
+  // ............................MIC FLOATING ACTION BURTTON ....................//
+  Widget micButton() {
     return AvatarGlow(
-      animate: true,
+      animate: startRecording,
       startDelay: Duration(milliseconds: 100),
       glowColor: Colors.blueAccent,
       child: GestureDetector(
@@ -425,11 +437,29 @@ Widget micButton(){
           setState(() {
             startRecording = true;
           });
+          if (isAvailable) {
+          speechToText.listen(
+            onResult:(result){
+              setState(() {
+                languageController.text = result.recognizedWords;
+
+              });
+            }
+          );
+
+          }
         },
         onTapUp: (value) {
           setState(() {
             startRecording = false;
           });
+         speechToText.stop();
+        },
+        onTapCancel: (){
+          setState(() {
+            startRecording = false ;
+          });
+          speechToText.stop();
         },
         child: Container(
           height: 100,
@@ -440,19 +470,24 @@ Widget micButton(){
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               shape: CircleBorder(),
-              backgroundColor:Colors.tealAccent,
+              backgroundColor: Colors.tealAccent,
               padding: EdgeInsets.all(0), // Ensure no padding around the button
             ),
             onPressed: () {},
             child: Icon(
               Icons.mic,
               color: Colors.white,
-              size: 70, shadows: [Shadow(color:Colors.black45 , blurRadius: 15 , offset: Offset(2.0 , 2.0))],
+              size: 70,
+              shadows: [
+                Shadow(
+                    color: Colors.black45,
+                    blurRadius: 15,
+                    offset: Offset(2.0, 2.0))
+              ],
             ),
           ),
         ),
       ),
     );
-}
-
+  }
 }
