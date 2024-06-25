@@ -1,5 +1,7 @@
+import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:translator/translator.dart';
 
 class LanguageTranslatorScreen extends StatefulWidget {
@@ -85,6 +87,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     }
   }
 
+  //
+
   void translate(String source, String destination, String input) async {
     GoogleTranslator translator = GoogleTranslator();
     var translation =
@@ -139,6 +143,12 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     }
   }
 
+  // voice Recogination ........ speech to text //
+
+  bool startRecording = false ;
+  final SpeechToText speechToText = SpeechToText();
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,6 +157,16 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
         centerTitle: true,
         backgroundColor: Colors.tealAccent,
       ),
+
+      // .......................Mic FloatingActionButton ....................//
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+         micButton()
+        ],
+      ),
+
       body: Center(
         child: Container(
           height: double.infinity,
@@ -286,7 +306,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
         autocorrect: true,
         maxLines: 3,
         cursorColor: Colors.deepOrange,
-        autofocus: true,
+        autofocus: false,
         style: const TextStyle(
             color: Colors.deepOrangeAccent,
             fontSize: 20,
@@ -393,4 +413,46 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
       color: isButtonPressed ? Colors.orange : Colors.black,
     );
   }
+
+  // Mic Button
+Widget micButton(){
+    return AvatarGlow(
+      animate: true,
+      startDelay: Duration(milliseconds: 100),
+      glowColor: Colors.blueAccent,
+      child: GestureDetector(
+        onTapDown: (details) {
+          setState(() {
+            startRecording = true;
+          });
+        },
+        onTapUp: (value) {
+          setState(() {
+            startRecording = false;
+          });
+        },
+        child: Container(
+          height: 100,
+          width: 100,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              shape: CircleBorder(),
+              backgroundColor:Colors.tealAccent,
+              padding: EdgeInsets.all(0), // Ensure no padding around the button
+            ),
+            onPressed: () {},
+            child: Icon(
+              Icons.mic,
+              color: Colors.white,
+              size: 70, shadows: [Shadow(color:Colors.black45 , blurRadius: 15 , offset: Offset(2.0 , 2.0))],
+            ),
+          ),
+        ),
+      ),
+    );
+}
+
 }

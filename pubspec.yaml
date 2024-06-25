@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.6
   translator: ^1.0.0
   flutter_tts: ^3.3.4
+  speech_to_text: ^6.6.2
+  avatar_glow: ^3.0.1
 
 dev_dependencies:
   flutter_test:
