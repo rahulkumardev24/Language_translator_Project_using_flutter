@@ -1,9 +1,6 @@
 import 'dart:io';
-
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
@@ -81,25 +78,24 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     _flutterTts.setSpeechRate(0.5);
   }
 
-  Future<void> _speak(String text) async {
-    if (text.isNotEmpty) {
-      try {
-        await _flutterTts.speak(text);
-      } catch (e) {
-        print("TTS Error: $e");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to speak: $e")),
-        );
-      }
+  void _speak(String text) async {
+    if (isSpeaking) {
+      // If speaking, stop the speech
+      await _flutterTts.stop();
+    } else {
+      // If not speaking, start speaking the text
+      await _flutterTts.speak(text);
     }
+    setState(() {
+      isSpeaking = !isSpeaking; // Toggle the speaking state
+    });
   }
-
   //
 
   void translate(String source, String destination, String input) async {
     GoogleTranslator translator = GoogleTranslator();
     var translation =
-        await translator.translate(input, from: source, to: destination);
+    await translator.translate(input, from: source, to: destination);
     setState(() {
       outputLanguage = translation.text.toString();
     });
@@ -156,13 +152,13 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
   final SpeechToText speechToText = SpeechToText();
   bool isAvailable = false;
 
- //  this function is call above inside the  initState
- Future<void> initializedSpeechToText() async {
- isAvailable = await speechToText.initialize();
- setState(() {
+  //  this function is call above inside the  initState
+  Future<void> initializedSpeechToText() async {
+    isAvailable = await speechToText.initialize();
+    setState(() {
 
- });
- }
+    });
+  }
 
   // ............IMAGE PICKER AND CAMERA , IMAGE TEXT INTO TEXT ...............//
   XFile? pickedImage ;
@@ -382,7 +378,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
         decoration: InputDecoration(
           focusedBorder: OutlineInputBorder(
               borderSide:
-                  const BorderSide(width: 2, color: Colors.orangeAccent),
+              const BorderSide(width: 2, color: Colors.orangeAccent),
               borderRadius: BorderRadius.circular(10)),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -452,7 +448,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
                 child: Text(
                   "$outputLanguage",
                   style: const TextStyle(
-                      fontSize: 25, fontWeight: FontWeight.bold ,),
+                    fontSize: 25, fontWeight: FontWeight.bold ,),
                 ),
               ),
             ),
@@ -471,16 +467,15 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
           isButtonPressed = true;
         });
         _speak(outputLanguage);
-        Future.delayed(Duration(seconds: 1), () {
-          setState(() {
-            isButtonPressed = false;
-          });
+        setState(() {
+          isButtonPressed = false;
         });
       },
       icon: Icon(Icons.volume_up_sharp),
-      color: isButtonPressed ? Colors.orange : Colors.black,
+      color: isSpeaking ? Colors.orange : Colors.black,
     );
   }
+
 
   // ............................MIC FLOATING ACTION BUTTON ....................//
   Widget micButton() {
@@ -494,14 +489,14 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
             startRecording = true;
           });
           if (isAvailable) {
-          speechToText.listen(
-            onResult:(result){
-              setState(() {
-                languageController.text = result.recognizedWords;
+            speechToText.listen(
+                onResult:(result){
+                  setState(() {
+                    languageController.text = result.recognizedWords;
 
-              });
-            }
-          );
+                  });
+                }
+            );
 
           }
         },
@@ -509,7 +504,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
           setState(() {
             startRecording = false;
           });
-         speechToText.stop();
+          speechToText.stop();
         },
         onTapCancel: (){
           setState(() {
@@ -521,8 +516,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
           height: 80,
           width: 80,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(50),
-            boxShadow: [BoxShadow(color: Colors.black45 , blurRadius: 5)]
+              borderRadius: BorderRadius.circular(50),
+              boxShadow: [BoxShadow(color: Colors.black45 , blurRadius: 5)]
           ),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -548,37 +543,36 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
- // .................................. Image Button ...............................//
- Widget  galleryButton(){
-   return Container(
-     width: 50,
-       height: 50,
-       alignment: Alignment.center,
-       child: FloatingActionButton(
-         onPressed: (){
-           getImage(ImageSource.gallery) ;
+  // .................................. Image Button ...............................//
+  Widget  galleryButton(){
+    return Container(
+        width: 50,
+        height: 50,
+        alignment: Alignment.center,
+        child: FloatingActionButton(
+          onPressed: (){
+            getImage(ImageSource.gallery) ;
 
-         },
-         child: Icon(Icons.photo , size: 30,),
-       )
-   ) ;
+          },
+          child: Icon(Icons.photo , size: 30,),
+        )
+    ) ;
+  }
 
- }
-
- // ..................................Camera Button ....................................//
-Widget cameraButton(){
-   return Container(
-     height: 50,
-       width: 50,
-       alignment: Alignment.center,
-       child: FloatingActionButton(
-           onPressed: (){
-             getImage(ImageSource.camera) ;
-           },
-           child: Icon(Icons.camera , size: 30,)
-       )
-   );
-}
+  // ..................................Camera Button ....................................//
+  Widget cameraButton(){
+    return Container(
+        height: 50,
+        width: 50,
+        alignment: Alignment.center,
+        child: FloatingActionButton(
+            onPressed: (){
+              getImage(ImageSource.camera) ;
+            },
+            child: Icon(Icons.camera , size: 30,)
+        )
+    );
+  }
 
   Widget imagePickerContainer() {
     return pickedImage == null
@@ -586,7 +580,7 @@ Widget cameraButton(){
         : Center(
       child: Image.file(
         File(pickedImage!.path),
-        height: 400,
+        height: 300,
       ),
     );
   }
