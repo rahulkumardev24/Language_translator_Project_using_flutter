@@ -1,6 +1,12 @@
+import 'dart:io';
+
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:translator/translator.dart';
 
@@ -28,8 +34,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     "Nepali",
     "Telugu"
   ];
-  var originLanguage = "from";
-  var destinationLanguage = "To";
+  var originLanguage = "English";
+  var destinationLanguage = "Hindi";
   var outputLanguage = "";
   TextEditingController languageController = TextEditingController();
 
@@ -158,6 +164,45 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
  });
  }
 
+  // ............IMAGE PICKER AND CAMERA , IMAGE TEXT INTO TEXT ...............//
+  XFile? pickedImage ;
+  String myText = "";
+  bool scanning = false ;
+  final ImagePicker imagePicker = ImagePicker() ;
+
+
+  getImage(ImageSource ourSource) async {
+    XFile? result = await imagePicker.pickImage(source: ourSource);
+    if (result != null) {
+      setState(() {
+        pickedImage = result ;
+      });
+      performTextRecogintion();
+    }
+  }
+  performTextRecogintion() async {
+    setState(() {
+      scanning = true;
+    });
+    try {
+      final inputImage = InputImage.fromFilePath(pickedImage!.path);
+      final textRecognizer = GoogleMlKit.vision.textRecognizer();
+      final recognizedText = await textRecognizer.processImage(inputImage);
+      setState(() {
+        myText = recognizedText.text;
+        languageController.text = recognizedText.text; // Update the languageController text
+        scanning = false;
+      });
+      textRecognizer.close();
+    } catch (e) {
+      print("Error during text recognition $e");
+      setState(() {
+        scanning = false;
+      });
+    }
+  }
+
+
 
 
   @override
@@ -170,13 +215,21 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
       ),
 
       // .......................Mic FloatingActionButton ....................//
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Here we call Floating Mic Button
-          micButton()
-        ],
+      floatingActionButton: Container(
+        width: double.infinity,
+        // padding: EdgeInsets.symmetric(hori),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            // Gallery Button
+            galleryButton(),
+            // Here we call Floating Mic Button
+            micButton() ,
+            // here we call camera button
+            cameraButton()
+
+          ],
+        ),
       ),
 
       body: Center(
@@ -203,11 +256,13 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
                   ],
                 ),
                 const SizedBox(height: 10),
+                imagePickerContainer() ,
                 userInputTextBox(),
                 const SizedBox(height: 10),
                 translatedButton(),
                 const SizedBox(height: 10),
-                outputTextBox()
+                outputTextBox(),
+
               ],
             ),
           ),
@@ -219,6 +274,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
   //........................................WIDGETS..........................//
 
   //.......................FROM LANGUAGE LIST BOX ....................................//
+
 
   Widget fromLanguageList() {
     return Container(
@@ -316,7 +372,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
       padding: const EdgeInsets.all(13.0),
       child: TextFormField(
         autocorrect: true,
-        maxLines: 3,
+        maxLines: 5,
         cursorColor: Colors.deepOrange,
         autofocus: false,
         style: const TextStyle(
@@ -396,7 +452,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
                 child: Text(
                   "$outputLanguage",
                   style: const TextStyle(
-                      fontSize: 25, fontWeight: FontWeight.bold),
+                      fontSize: 25, fontWeight: FontWeight.bold ,),
                 ),
               ),
             ),
@@ -426,7 +482,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
-  // ............................MIC FLOATING ACTION BURTTON ....................//
+  // ............................MIC FLOATING ACTION BUTTON ....................//
   Widget micButton() {
     return AvatarGlow(
       animate: startRecording,
@@ -462,10 +518,11 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
           speechToText.stop();
         },
         child: Container(
-          height: 100,
-          width: 100,
+          height: 80,
+          width: 80,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(50),
+            boxShadow: [BoxShadow(color: Colors.black45 , blurRadius: 5)]
           ),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -474,10 +531,10 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
               padding: EdgeInsets.all(0), // Ensure no padding around the button
             ),
             onPressed: () {},
-            child: Icon(
+            child: const Icon(
               Icons.mic,
               color: Colors.white,
-              size: 70,
+              size: 50,
               shadows: [
                 Shadow(
                     color: Colors.black45,
@@ -490,4 +547,48 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
       ),
     );
   }
+
+ // .................................. Image Button ...............................//
+ Widget  galleryButton(){
+   return Container(
+     width: 50,
+       height: 50,
+       alignment: Alignment.center,
+       child: FloatingActionButton(
+         onPressed: (){
+           getImage(ImageSource.gallery) ;
+
+         },
+         child: Icon(Icons.photo , size: 30,),
+       )
+   ) ;
+
+ }
+
+ // ..................................Camera Button ....................................//
+Widget cameraButton(){
+   return Container(
+     height: 50,
+       width: 50,
+       alignment: Alignment.center,
+       child: FloatingActionButton(
+           onPressed: (){
+             getImage(ImageSource.camera) ;
+           },
+           child: Icon(Icons.camera , size: 30,)
+       )
+   );
 }
+
+  Widget imagePickerContainer() {
+    return pickedImage == null
+        ? Container()
+        : Center(
+      child: Image.file(
+        File(pickedImage!.path),
+        height: 400,
+      ),
+    );
+  }
+}
+
