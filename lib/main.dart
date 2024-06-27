@@ -2,7 +2,10 @@
 
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:translater_new/screen/category_screen.dart';
+import 'package:translater_new/screen/dictionary_screen.dart';
 import 'package:translater_new/screen/translator_screen.dart';
 
 void main() {
@@ -23,7 +26,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: LanguageTranslatorScreen() ,
+      home:LanguageTranslatorScreen() ,
     );
   }
 }

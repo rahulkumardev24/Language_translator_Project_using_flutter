@@ -5,6 +5,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:translater_new/screen/category_screen.dart';
 import 'package:translator/translator.dart';
 
 class LanguageTranslatorScreen extends StatefulWidget {
@@ -198,14 +199,37 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     }
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // ........................................APP BAR .........................................//
       appBar: AppBar(
-        title: const Text("Language Translator"),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryScreen()));
+              },
+              child: Card(
+                elevation: 5,
+                child: Container(
+                  width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white
+                    ),
+                    child:Padding(
+                      padding: const EdgeInsets.all(1.0),
+                      child: Image.asset("assets/images/ic_menu.png"),
+                    )),
+              ),
+            ),
+            const Text("Language Translator"),
+            Icon(Icons.account_circle_outlined , size: 40,)
+          ],
+        ),
         centerTitle: true,
         backgroundColor: Colors.tealAccent,
       ),
@@ -584,5 +608,6 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
       ),
     );
   }
+
 }
 
