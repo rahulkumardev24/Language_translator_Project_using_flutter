@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:translater_new/api/api.dart';
-import 'package:translater_new/api/response_model_api.dart';
+import '../dictionary/api.dart';
+import '../dictionary/response_model_api.dart';
+
 
 class DictionaryScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _DictionaryScreen();
 }
-
 class _DictionaryScreen extends State<DictionaryScreen> {
   bool inProgress = false;
   ResponseModel? responseModel;
