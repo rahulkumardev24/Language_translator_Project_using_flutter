@@ -6,9 +6,12 @@ import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:translater_new/screen/category_screen.dart';
+import 'package:translater_new/utils/custom_text_style.dart';
 import 'package:translator/translator.dart';
 
 class LanguageTranslatorScreen extends StatefulWidget {
+  const LanguageTranslatorScreen({super.key});
+
   @override
   State<StatefulWidget> createState() => _LanguageTranslatorScreenPage();
 }
@@ -46,8 +49,15 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
   @override
   void initState() {
     super.initState();
-    initializedTts();  // here we call initializedTts
-    initializedSpeechToText() ;
+    initializedTts(); // here we call initializedTts
+    initializedSpeechToText();
+
+    /// user box is empty then automatic output text empty
+    languageController.addListener(() {
+      setState(() {
+        outputLanguage = languageController.text.isEmpty ? "" : outputLanguage;
+      });
+    });
   }
 
   void initializedTts() {
@@ -96,7 +106,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
   void translate(String source, String destination, String input) async {
     GoogleTranslator translator = GoogleTranslator();
     var translation =
-    await translator.translate(input, from: source, to: destination);
+        await translator.translate(input, from: source, to: destination);
     setState(() {
       outputLanguage = translation.text.toString();
     });
@@ -156,27 +166,25 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
   //  this function is call above inside the  initState
   Future<void> initializedSpeechToText() async {
     isAvailable = await speechToText.initialize();
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   // ............IMAGE PICKER AND CAMERA , IMAGE TEXT INTO TEXT ...............//
-  XFile? pickedImage ;
+  XFile? pickedImage;
   String myText = "";
-  bool scanning = false ;
-  final ImagePicker imagePicker = ImagePicker() ;
-
+  bool scanning = false;
+  final ImagePicker imagePicker = ImagePicker();
 
   getImage(ImageSource ourSource) async {
     XFile? result = await imagePicker.pickImage(source: ourSource);
     if (result != null) {
       setState(() {
-        pickedImage = result ;
+        pickedImage = result;
       });
       performTextRecogintion();
     }
   }
+
   performTextRecogintion() async {
     setState(() {
       scanning = true;
@@ -187,7 +195,8 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
       final recognizedText = await textRecognizer.processImage(inputImage);
       setState(() {
         myText = recognizedText.text;
-        languageController.text = recognizedText.text; // Update the languageController text
+        languageController.text =
+            recognizedText.text; // Update the languageController text
         scanning = false;
       });
       textRecognizer.close();
@@ -199,286 +208,312 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     }
   }
 
+  bool isDarkMode = false;
+
+  /// Default mode is light
+
+  void toggleTheme() {
+    setState(() {
+      isDarkMode = !isDarkMode;
+
+      /// Toggle theme
+    });
+  }
+
+  late MediaQueryData mqData;
+
   @override
   Widget build(BuildContext context) {
+    mqData = MediaQuery.of(context);
+    final mqHeight = MediaQuery.of(context).size.height;
+    final mqWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      // ........................................APP BAR .........................................//
+      /// ........................................APP BAR .........................................///
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            InkWell(
-              onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryScreen()));
+        title: Text(
+          "Language translator",
+          style: myTextStyle18(fontWeight: FontWeight.bold),
+        ),
+        leading: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: InkWell(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => CategoryScreen()));
               },
-              child: Card(
-                elevation: 5,
-                child: Container(
-                  width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.white
-                    ),
-                    child:Padding(
-                      padding: const EdgeInsets.all(1.0),
-                      child: Image.asset("assets/images/ic_menu.png"),
-                    )),
-              ),
-            ),
-            const Text("Language Translator"),
-            Icon(Icons.account_circle_outlined , size: 40,)
-          ],
+              child: Image.asset("assets/images/category.png")),
         ),
         centerTitle: true,
         backgroundColor: Colors.tealAccent,
+
+        /// Light and dark them
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: InkWell(
+              onTap: toggleTheme,
+              child: Icon(
+                isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                size: 30,
+                color: isDarkMode ? const Color(0xff5E4DB2) : Colors.orange,
+              ),
+            ),
+          ),
+        ],
       ),
 
       // .......................Mic FloatingActionButton ....................//
-      floatingActionButton: Container(
-        width: double.infinity,
-        // padding: EdgeInsets.symmetric(hori),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            // Gallery Button
-            galleryButton(),
-            // Here we call Floating Mic Button
-            micButton() ,
-            // here we call camera button
-            cameraButton()
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          /// Gallery Button
+          galleryButton(),
 
-          ],
-        ),
+          /// Here we call Floating Mic Button
+          micButton(),
+
+          /// here we call camera button
+          cameraButton()
+        ],
       ),
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 30),
 
-      body: Center(
-        child: Container(
-          height: double.infinity,
-          width: double.infinity,
-          color: Colors.white,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    fromLanguageList(),
-                    const SizedBox(width: 10),
-                    const Icon(
-                      Icons.arrow_right_alt_outlined,
-                      color: Colors.black87,
-                      size: 40,
-                    ),
-                    const SizedBox(width: 10),
-                    toLanguageList()
-                  ],
-                ),
-                const SizedBox(height: 10),
-                imagePickerContainer() ,
-                userInputTextBox(),
-                const SizedBox(height: 10),
-                translatedButton(),
-                const SizedBox(height: 10),
-                outputTextBox(),
+              /// Language selection
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  /// From language
+                  fromLanguageList(),
+                  const Icon(
+                    Icons.arrow_right_alt_outlined,
+                    color: Colors.black45,
+                    size: 40,
+                  ),
 
-              ],
-            ),
+                  /// To language
+                  toLanguageList()
+                ],
+              ),
+
+              const SizedBox(height: 10),
+
+              /// selected image container
+              imagePickerContainer(),
+              const SizedBox(height: 10),
+
+              /// user input box
+              userInputTextBox(),
+              const SizedBox(height: 10),
+
+              /// translated button
+              translatedButton(),
+              const SizedBox(height: 10),
+              outputLanguage.isNotEmpty ? outputTextBox() : const SizedBox(),
+              SizedBox(
+                height: mqHeight * 0.1,
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  //........................................WIDGETS..........................//
+  ///........................................WIDGETS..........................//
 
-  //.......................FROM LANGUAGE LIST BOX ....................................//
-
+  ///.......................FROM LANGUAGE LIST BOX ....................................//
 
   Widget fromLanguageList() {
     return Container(
-      height: 60,
-      width: 160,
-      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: Colors.blue.shade100,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-              color: Colors.black45, blurRadius: 2, offset: Offset(1.0, 2.0))
-        ],
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 15.0),
-        child: DropdownButton(
-          focusColor: Colors.tealAccent,
-          iconDisabledColor: Colors.blue.shade100,
-          iconEnabledColor: Colors.blue.shade100,
-          hint: Text(
-            originLanguage,
-            style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 23,
-                fontWeight: FontWeight.bold),
+      child: DropdownButtonHideUnderline(
+        /// Removes the underline
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12.0),
+          child: DropdownButton(
+            focusColor: Colors.tealAccent,
+            iconDisabledColor: Colors.blue.shade100,
+            iconEnabledColor: Colors.blue.shade100,
+            alignment: Alignment.center,
+            iconSize: 30,
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black45,
+            ),
+            elevation: 1,
+            borderRadius: BorderRadius.circular(5),
+            style: myTextStyle15(),
+            menuMaxHeight: mqData.size.height * 0.4,
+            hint: Text(originLanguage, style: myTextStyle24()),
+            dropdownColor: Colors.blue.shade50,
+            items: languageList.map((String dropDownStringItem) {
+              return DropdownMenuItem(
+                value: dropDownStringItem,
+                child: Text(
+                  dropDownStringItem,
+                  style: myTextStyle18(),
+                ),
+              );
+            }).toList(),
+            onChanged: (String? value) {
+              setState(() {
+                originLanguage = value!;
+              });
+            },
           ),
-          dropdownColor: Colors.blue.shade50,
-          items: languageList.map((String dropDownStringItem) {
-            return DropdownMenuItem(
-              child: Text(dropDownStringItem),
-              value: dropDownStringItem,
-            );
-          }).toList(),
-          onChanged: (String? value) {
-            setState(() {
-              originLanguage = value!;
-            });
-          },
         ),
       ),
     );
   }
 
-  //..................... To LANGUAGE LIST BOX ...........................//
+  ///..................... To LANGUAGE LIST BOX ...........................//
   Widget toLanguageList() {
     return Container(
-      height: 60,
-      width: 160,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: Colors.blue.shade100,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-              color: Colors.black45, blurRadius: 2, offset: Offset(1.0, 2.0))
-        ],
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0),
-        child: DropdownButton(
-          focusColor: Colors.tealAccent,
-          iconDisabledColor: Colors.blue.shade100,
-          iconEnabledColor: Colors.blue.shade100,
-          alignment: Alignment.center,
-          hint: Text(
-            destinationLanguage,
-            style: const TextStyle(
-              color: Colors.black87,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
+      child: DropdownButtonHideUnderline(
+        child: Padding(
+          padding: const EdgeInsets.only(right: 21.0),
+          child: DropdownButton(
+            iconSize: 30,
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black45,
             ),
+            focusColor: Colors.tealAccent,
+            iconDisabledColor: Colors.blue.shade100,
+            iconEnabledColor: Colors.blue.shade100,
+            alignment: Alignment.center,
+            elevation: 1,
+            borderRadius: BorderRadius.circular(5),
+            style: myTextStyle15(),
+            menuMaxHeight: mqData.size.height * 0.4,
+            hint: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(destinationLanguage, style: myTextStyle24()),
+            ),
+            dropdownColor: Colors.blue.shade50,
+            items: languageList.map((String dropDownStringItem) {
+              return DropdownMenuItem(
+                value: dropDownStringItem,
+                child: Text(
+                  dropDownStringItem,
+                  style: myTextStyle18(),
+                ),
+              );
+            }).toList(),
+            onChanged: (String? value) {
+              setState(() {
+                destinationLanguage = value!;
+              });
+            },
           ),
-          dropdownColor: Colors.blue.shade50,
-          items: languageList.map((String dropDownStringItem) {
-            return DropdownMenuItem(
-              child: Text(dropDownStringItem),
-              value: dropDownStringItem,
-            );
-          }).toList(),
-          onChanged: (String? value) {
-            setState(() {
-              destinationLanguage = value!;
-            });
-          },
         ),
       ),
     );
   }
 
-  //......................... USER INPUT BOX ...........................//
+  ///......................... USER INPUT BOX ...........................//
 
   Widget userInputTextBox() {
-    return Padding(
-      padding: const EdgeInsets.all(13.0),
-      child: TextFormField(
-        autocorrect: true,
-        maxLines: 5,
-        cursorColor: Colors.deepOrange,
-        autofocus: false,
-        style: const TextStyle(
-            color: Colors.deepOrangeAccent,
-            fontSize: 20,
-            fontWeight: FontWeight.bold),
-        decoration: InputDecoration(
-          focusedBorder: OutlineInputBorder(
-              borderSide:
-              const BorderSide(width: 2, color: Colors.orangeAccent),
-              borderRadius: BorderRadius.circular(10)),
-          enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(width: 1, color: Colors.tealAccent)),
-          disabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(width: 1, color: Colors.deepOrange),
-              borderRadius: BorderRadius.circular(10)),
-          hintText: "Write Text",
-          labelStyle: TextStyle(fontSize: 20, color: Colors.deepOrange),
-        ),
-        controller: languageController,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "please Enter Text To Translate";
-          }
-          return null;
-        },
+    return TextFormField(
+      autocorrect: true,
+      maxLines: 500,
+      minLines: 5,
+      scrollPhysics: const NeverScrollableScrollPhysics(),
+      cursorColor: Colors.black54,
+      autofocus: false,
+      style: myTextStyle15(),
+      decoration: InputDecoration(
+        focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(width: 1, color: Colors.tealAccent),
+            borderRadius: BorderRadius.circular(10)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(width: 1, color: Colors.black45)),
+        hintText: "Type text to translate...",
+        hintStyle: myTextStyle15(
+            fontColor: Colors.black45, fontWeight: FontWeight.bold),
       ),
+      controller: languageController,
     );
   }
 
-  //....................TRANSLATED BUTTON ................................//
+  ///....................TRANSLATED BUTTON ................................//
 
   Widget translatedButton() {
-    return Container(
-      width: 300,
-      child: FloatingActionButton(
+    return SizedBox(
+      width: mqData.size.width,
+      child: ElevatedButton(
         onPressed: () {
-          translate(
-              languageCode(originLanguage),
-              languageCode(destinationLanguage),
-              languageController.text.toString());
+          if (languageController.text.isNotEmpty) {
+            /// when click on button
+            translate(
+                languageCode(originLanguage),
+                languageCode(destinationLanguage),
+                languageController.text.toString());
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                "Type text to translate...",
+                style: myTextStyle18(fontColor: Colors.white),
+              ),
+              backgroundColor: Colors.red,
+              action: SnackBarAction(
+                  label: "Ok",
+                  textColor: Colors.black54,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  }),
+            ));
+          }
         },
-        backgroundColor: Colors.tealAccent.shade100,
-        splashColor: Colors.orange.shade400,
-        elevation: 5,
-        hoverColor: Colors.teal,
-        child: const Text(
+        style: ElevatedButton.styleFrom(
+            elevation: 0,
+            backgroundColor: Colors.tealAccent.shade100,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+        child: Text(
           "Translate",
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 30),
+          style: myTextStyle24(fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 
-  //...................OUTPUT TEXT BOX .....................................//
+  ///...................OUTPUT TEXT BOX .....................................//
 
   Widget outputTextBox() {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Container(
-        width: double.maxFinite,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(width: 1, color: Colors.deepOrange)),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                speakIconButton(),
-              ],
+    return Stack(
+      children: [
+        Container(
+          width: double.maxFinite,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10), color: Colors.black12),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SelectableText(
+              languageController.text.isEmpty ? "" : outputLanguage,
+              cursorColor: Colors.red,
+              showCursor: true,
+              style: myTextStyle18(fontColor: Colors.blueAccent),
             ),
-            Container(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "$outputLanguage",
-                  style: const TextStyle(
-                    fontSize: 25, fontWeight: FontWeight.bold ,),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        Positioned(top: 0, right: 0, child: speakIconButton())
+      ],
     );
   }
 
@@ -495,17 +530,16 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
           isButtonPressed = false;
         });
       },
-      icon: Icon(Icons.volume_up_sharp),
+      icon: const Icon(Icons.volume_up_sharp),
       color: isSpeaking ? Colors.orange : Colors.black,
     );
   }
-
 
   // ............................MIC FLOATING ACTION BUTTON ....................//
   Widget micButton() {
     return AvatarGlow(
       animate: startRecording,
-      startDelay: Duration(milliseconds: 100),
+      startDelay: const Duration(milliseconds: 100),
       glowColor: Colors.blueAccent,
       child: GestureDetector(
         onTapDown: (details) {
@@ -513,15 +547,11 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
             startRecording = true;
           });
           if (isAvailable) {
-            speechToText.listen(
-                onResult:(result){
-                  setState(() {
-                    languageController.text = result.recognizedWords;
-
-                  });
-                }
-            );
-
+            speechToText.listen(onResult: (result) {
+              setState(() {
+                languageController.text = result.recognizedWords;
+              });
+            });
           }
         },
         onTapUp: (value) {
@@ -530,24 +560,26 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
           });
           speechToText.stop();
         },
-        onTapCancel: (){
+        onTapCancel: () {
           setState(() {
-            startRecording = false ;
+            startRecording = false;
           });
           speechToText.stop();
         },
         child: Container(
-          height: 80,
-          width: 80,
+          height: mqData.size.height * 0.07,
+          width: mqData.size.height * 0.07,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(50),
-              boxShadow: [BoxShadow(color: Colors.black45 , blurRadius: 5)]
-          ),
+              boxShadow: const [
+                BoxShadow(color: Colors.black45, blurRadius: 1)
+              ]),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              shape: CircleBorder(),
+              shape: const CircleBorder(),
               backgroundColor: Colors.tealAccent,
-              padding: EdgeInsets.all(0), // Ensure no padding around the button
+              padding: const EdgeInsets.all(
+                  0), // Ensure no padding around the button
             ),
             onPressed: () {},
             child: const Icon(
@@ -556,9 +588,9 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
               size: 50,
               shadows: [
                 Shadow(
-                    color: Colors.black45,
-                    blurRadius: 15,
-                    offset: Offset(2.0, 2.0))
+                  color: Colors.black45,
+                  blurRadius: 5,
+                )
               ],
             ),
           ),
@@ -568,46 +600,88 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
   }
 
   // .................................. Image Button ...............................//
-  Widget  galleryButton(){
+  Widget galleryButton() {
     return Container(
-        width: 50,
-        height: 50,
+        width: mqData.size.height * 0.1,
+        height: mqData.size.height * 0.1,
         alignment: Alignment.center,
         child: FloatingActionButton(
-          onPressed: (){
-            getImage(ImageSource.gallery) ;
-
+          elevation: 0,
+          backgroundColor: Colors.blue.shade100,
+          heroTag: null,
+          onPressed: () {
+            getImage(ImageSource.gallery);
           },
-          child: Icon(Icons.photo , size: 30,),
-        )
-    ) ;
+          child: const Icon(
+            Icons.photo,
+            size: 30,
+            color: Colors.black87,
+          ),
+        ));
   }
 
   // ..................................Camera Button ....................................//
-  Widget cameraButton(){
+  Widget cameraButton() {
     return Container(
-        height: 50,
-        width: 50,
+        width: mqData.size.height * 0.1,
+        height: mqData.size.height * 0.1,
         alignment: Alignment.center,
         child: FloatingActionButton(
-            onPressed: (){
-              getImage(ImageSource.camera) ;
+            elevation: 0,
+            backgroundColor: Colors.blue.shade100,
+            heroTag: null,
+            onPressed: () {
+              getImage(ImageSource.camera);
             },
-            child: Icon(Icons.camera , size: 30,)
-        )
-    );
+            child: const Icon(
+              Icons.camera,
+              size: 30,
+              color: Colors.black87,
+            )));
   }
 
+  /// image picker widget
   Widget imagePickerContainer() {
     return pickedImage == null
         ? Container()
         : Center(
-      child: Image.file(
-        File(pickedImage!.path),
-        height: 300,
-      ),
-    );
+            child: Stack(
+              children: [
+                Image.file(
+                  File(pickedImage!.path),
+                  fit: BoxFit.cover,
+                ),
+
+                /// Delete button
+                Positioned(
+                  bottom: 10,
+                  right: 10,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white30,
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        /// Clear the image
+                        setState(() {
+                          pickedImage = null;
+                        });
+
+                        /// Clear text input and output
+                        outputLanguage = "";
+                        languageController.clear();
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(4.0),
+                        child: Icon(Icons.delete_forever,
+                            size: 30, color: Colors.red),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
   }
-
 }
-
