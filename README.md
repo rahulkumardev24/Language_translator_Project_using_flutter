@@ -1,4 +1,4 @@
-# 📖 Flutter Translator App
+# 📖 Language Translator App
 
 A powerful **Language Translator** app built using **Flutter** and integrated with **Google Gemini API** for text translation and **Dictionary API** for word meanings. The app also includes a chat feature and learning modules for better language understanding.
 
