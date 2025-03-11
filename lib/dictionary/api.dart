@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:translater_new/dictionary/response_model_api.dart';
 
-
 class API {
   static const String baseUrl = "https://api.dictionaryapi.dev/api/v2/entries/en/";
   static Future<ResponseModel> fetchMeaning(String word) async {

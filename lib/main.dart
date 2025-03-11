@@ -1,7 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:translater_new/screen/category_screen.dart';
-import 'package:translater_new/screen/chat_screen.dart';
 import 'package:translater_new/screen/translator_screen.dart';
 
 void main() {
