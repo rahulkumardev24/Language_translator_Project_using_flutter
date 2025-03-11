@@ -100,15 +100,15 @@ class _CategoryScreen extends State<CategoryScreen> {
                       children: [
                         /// Image
                         SizedBox(
-                          height: mqData!.size.height * 0.1,
-                          width: mqData!.size.height * 0.1,
+                          height: mqData!.size.height * 0.05,
+                          width: mqData!.size.height * 0.05,
                           child: categories[index].image,
                         ),
                         const SizedBox(height: 6,),
                         /// Title
                         Text(
                           categories[index].title,
-                          style: myTextStyle24(fontWeight: FontWeight.bold),
+                          style: myTextStyle18(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),

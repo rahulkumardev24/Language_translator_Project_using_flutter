@@ -503,7 +503,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10), color: Colors.black12),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12.0),
             child: SelectableText(
               languageController.text.isEmpty ? "" : outputLanguage,
               cursorColor: Colors.red,
@@ -517,7 +517,7 @@ class _LanguageTranslatorScreenPage extends State<LanguageTranslatorScreen> {
     );
   }
 
-  // ................. Speaker icon ...............................//
+  /// ................. Speaker icon ...............................//
 
   Widget speakIconButton() {
     return IconButton(
