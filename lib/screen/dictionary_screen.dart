@@ -1,35 +1,62 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../dictionary/api.dart';
 import '../dictionary/response_model_api.dart';
-
+import '../utils/custom_text_style.dart';
 
 class DictionaryScreen extends StatefulWidget {
+  const DictionaryScreen({super.key});
+
   @override
   State<StatefulWidget> createState() => _DictionaryScreen();
 }
+
 class _DictionaryScreen extends State<DictionaryScreen> {
   bool inProgress = false;
   ResponseModel? responseModel;
   String noDataText = "Starting Searching";
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      /// ----------------- App Bar ------------------///
       appBar: AppBar(
-        title: Text("Dictionary"),
+        title: Text(
+          "Dictionary",
+          style: myTextStyle18(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
+        backgroundColor: Colors.tealAccent,
+        leading: InkWell(
+          onTap: (){
+            Navigator.pop(context) ;
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+                decoration: const BoxDecoration(
+                    shape: BoxShape.circle, color: Colors.black12),
+                child: const Icon(
+                  Icons.backspace_outlined,
+                  color: Colors.black87,
+                )),
+          ),
+        ),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Column(
           children: [
+            /// ----- SEARCH BOX ---------///
             _searchBoxWidget(),
             const SizedBox(
               height: 12,
             ),
             if (inProgress)
-              const LinearProgressIndicator()
+              const LinearProgressIndicator(
+                color: Colors.orange,
+              )
             else if (responseModel != null)
               Expanded(child: _buildResponseWidget())
             else
@@ -40,20 +67,37 @@ class _DictionaryScreen extends State<DictionaryScreen> {
     );
   }
 
-  // ............................ WIDGETS ..............................//
+  /// ............................ WIDGETS ..............................///
 
-  _searchBoxWidget() {
+  /// Search widgets
+  Widget _searchBoxWidget() {
     return TextField(
+      controller: _searchController, // Added controller
       decoration: InputDecoration(
         hintText: "Search Word",
-        prefixIcon: Icon(Icons.search),
+        hintStyle: myTextStyle18(
+            fontWeight: FontWeight.bold, fontColor: Colors.black45),
+        suffixIcon: InkWell(
+          onTap: () {
+            if (_searchController.text.isNotEmpty) {
+              _getMeaningFromApi(
+                  _searchController.text); // Get word from controller
+            }
+          },
+          child: const Icon(Icons.search, color: Colors.blue),
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.blue, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.black45, width: 1),
+        ),
       ),
-      onSubmitted: (value) {
-        _getMeaningFromApi(value);
-      },
     );
   }
 
@@ -65,16 +109,13 @@ class _DictionaryScreen extends State<DictionaryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Align(
           alignment: Alignment.topLeft,
           child: Text(
             responseModel!.word ?? "",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 23,
-              color: Colors.blueAccent,
-            ),
+            style: myTextStyle24(
+                fontWeight: FontWeight.bold, fontColor: Colors.blue),
           ),
         ),
         Text(responseModel!.phonetic ?? ""),
@@ -100,29 +141,21 @@ class _DictionaryScreen extends State<DictionaryScreen> {
     });
 
     return Card(
-      elevation: 5,
+      elevation: 1,
       child: Padding(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               meanings.partOfSpeech ?? "",
-              style: TextStyle(
-                color: Colors.orange.shade700,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
+              style: myTextStyle18(
+                  fontColor: Colors.orange.shade700,
+                  fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 12),
-            const Text(
-              "Definitions: ",
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
+            const SizedBox(height: 12),
+            Text("Definitions: ",
+                style: myTextStyle15(fontWeight: FontWeight.bold)),
             Text(definitionList),
             _buildSynonyms("Synonyms", meanings.synonyms),
             _buildAntonyms("Antonyms", meanings.antonyms),
@@ -140,27 +173,26 @@ class _DictionaryScreen extends State<DictionaryScreen> {
         children: [
           Text(
             "$title : ",
-            style: TextStyle(
-              color: Colors.orange.shade700,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: myTextStyle18(
+                fontColor: Colors.orange.shade700, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
             synonymsList!
                 .toSet()
                 .toString()
                 .replaceAll("{", "")
                 .replaceAll("}", ""),
+            style: myTextStyle15(),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
         ],
       );
     } else {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
   }
+
   // ..........................Antonyms.....................//
   _buildAntonyms(String title, List<String>? antonymsList) {
     if (antonymsList?.isNotEmpty ?? false) {
@@ -169,25 +201,22 @@ class _DictionaryScreen extends State<DictionaryScreen> {
         children: [
           Text(
             "$title : ",
-            style: TextStyle(
-              color: Colors.orange.shade700,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: myTextStyle18(
+                fontColor: Colors.orange.shade700, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Text(
-            antonymsList!
-                .toSet()
-                .toString()
-                .replaceAll("{", "")
-                .replaceAll("}", ""),
-          ),
-          SizedBox(height: 10),
+              antonymsList!
+                  .toSet()
+                  .toString()
+                  .replaceAll("{", "")
+                  .replaceAll("}", ""),
+              style: myTextStyle15()),
+          const SizedBox(height: 10),
         ],
       );
     } else {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
   }
 
@@ -199,7 +228,7 @@ class _DictionaryScreen extends State<DictionaryScreen> {
       child: Center(
         child: Text(
           noDataText,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: myTextStyle18(),
         ),
       ),
     );

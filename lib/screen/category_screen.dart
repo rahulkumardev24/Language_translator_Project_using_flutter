@@ -45,15 +45,20 @@ class _CategoryScreen extends State<CategoryScreen> {
         ),
         centerTitle: true,
         backgroundColor: Colors.tealAccent,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-              decoration: const BoxDecoration(
-                  shape: BoxShape.circle, color: Colors.black12),
-              child: const Icon(
-                Icons.backspace_outlined,
-                color: Colors.black87,
-              )),
+        leading: InkWell(
+          onTap: (){
+            Navigator.pop(context) ;
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+                decoration: const BoxDecoration(
+                    shape: BoxShape.circle, color: Colors.black12),
+                child: const Icon(
+                  Icons.backspace_outlined,
+                  color: Colors.black87,
+                )),
+          ),
         ),
       ),
       backgroundColor: Colors.white,
