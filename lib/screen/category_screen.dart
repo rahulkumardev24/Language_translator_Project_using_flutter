@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:translater_new/screen/chat_screen.dart';
 import 'package:translater_new/screen/dictionary_screen.dart';
 import 'package:translater_new/screen/translator_screen.dart';
+import 'package:translater_new/utils/custom_text_style.dart';
 
 import '../model/category_model.dart';
 
@@ -29,59 +30,89 @@ class _CategoryScreen extends State<CategoryScreen> {
         image: Image.asset("assets/images/female.png"), title: "Female"),
   ];
 
+  MediaQueryData? mqData;
+
   @override
   Widget build(BuildContext context) {
+    mqData = MediaQuery.of(context);
+
     return Scaffold(
+      /// ----------------- App Bar ------------------///
       appBar: AppBar(
-        title: Text("Category"),
-        centerTitle: true,
-      ),
-      body: GridView.builder(
-        itemCount: categories.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
+        title: Text(
+          "Language Tools",
+          style: myTextStyle18(fontWeight: FontWeight.bold),
         ),
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: GestureDetector(
-              onTap: () {
-                if (categories[index].title == "Dictionary") {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => DictionaryScreen()));
-                } else if (categories[index].title == "Translation") {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => LanguageTranslatorScreen()));
-                }else if (categories[index].title == "Chat") {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>ChatScreen()));
-                }
-              },
-              child: Card(
-                elevation: 10,
-                child: GridTile(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                          height: 50,
-                          width: 50,
-                          child: categories[index].image),
-                      Text(
-                        categories[index].title,
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+        centerTitle: true,
+        backgroundColor: Colors.tealAccent,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+              decoration: const BoxDecoration(
+                  shape: BoxShape.circle, color: Colors.black12),
+              child: const Icon(
+                Icons.backspace_outlined,
+                color: Colors.black87,
+              )),
+        ),
+      ),
+      backgroundColor: Colors.white,
+
+      ///--------------------BODY-----------------------------///
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: GridView.builder(
+          itemCount: categories.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+          ),
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GestureDetector(
+                onTap: () {
+                  if (categories[index].title == "Dictionary") {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => DictionaryScreen()));
+                  } else if (categories[index].title == "Translation") {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LanguageTranslatorScreen()));
+                  } else if (categories[index].title == "Chat") {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => ChatScreen()));
+                  }
+                },
+                child: Card(
+                  color: Colors.blue.shade50,
+                  elevation: 1,
+                  child: GridTile(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        /// Image
+                        SizedBox(
+                          height: mqData!.size.height * 0.1,
+                          width: mqData!.size.height * 0.1,
+                          child: categories[index].image,
+                        ),
+                        const SizedBox(height: 6,),
+                        /// Title
+                        Text(
+                          categories[index].title,
+                          style: myTextStyle24(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
